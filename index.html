@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0B0F14">
+    <title>GHOSTCHAT | Elite Privacy Layer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-primary: #0B0F14;
+            --bg-secondary: #121821;
+            --accent: #22FFAA;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --text-muted: #6B7280;
+            --glow-color: rgba(34, 255, 170, 0.15);
+            --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Scrollbar --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* --- Custom Cursor Glow (Ambient) --- */
+        #cursor-glow {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            filter: blur(40px);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.1;
+            transition: transform 0.1s ease;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            #cursor-glow { display: block; }
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 140px 0;
+            position: relative;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: var(--transition);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Typography --- */
+        h1, h2, h3 {
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .bg-number {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18rem;
+            font-weight: 800;
+            color: white;
+            opacity: 0.03;
+            top: -20px;
+            left: -40px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- Hero Section --- */
+        #hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-glow {
+            position: absolute;
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+            z-index: -1;
+            animation: pulse 12s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.2; }
+            to { transform: scale(1.2); opacity: 0.4; }
+        }
+
+        .hero-title {
+            font-size: clamp(3.5rem, 10vw, 8.5rem);
+            letter-spacing: 0.12em;
+            margin-bottom: 1rem;
+            background: linear-gradient(to bottom, #fff 40%, #444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(34, 255, 170, 0.1));
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            margin-bottom: 2.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-statement {
+            max-width: 620px;
+            margin: 0 auto 1rem auto;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1.1rem 2.8rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px rgba(34, 255, 170, 0.15);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 40px rgba(34, 255, 170, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            border: 1px solid #222;
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(34, 255, 170, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 4rem;
+        }
+
+        .badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 5px 12px;
+            border: 1px solid #1a1a1a;
+            border-radius: 2px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.01);
+        }
+
+        /* --- Problem Section --- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: start;
+        }
+
+        blockquote {
+            font-style: italic;
+            border-left: 3px solid var(--accent);
+            padding: 1.5rem 2.5rem;
+            margin: 3rem 0;
+            background: linear-gradient(90deg, #121821, transparent);
+            font-size: 1.25rem;
+            color: #fff;
+            line-height: 1.5;
+        }
+
+        .section-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        /* --- Trust Section --- */
+        #trust {
+            background: #0d1218;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+
+        .trust-item h4 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .trust-item p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Technical Section --- */
+        #technical {
+            background: var(--bg-secondary);
+            border-top: 1px solid #1a1a1a;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .code-window {
+            background: #05070a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .code-header {
+            background: #1a1a1a;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 1px solid #222;
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        pre {
+            padding: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #888;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .keyword { color: var(--accent); }
+        .string { color: #ce9178; }
+        .comment { color: #555; }
+
+        /* --- Feature Cards --- */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 2rem;
+            margin-top: 5rem;
+        }
+
+        .feature-card {
+            background: #0d1218;
+            padding: 4rem 2.5rem;
+            border: 1px solid #1a1a1a;
+            border-radius: 4px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px);
+            background: #111822;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: var(--transition);
+            transform-origin: left;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            margin-bottom: 2rem;
+            color: var(--accent);
+            width: 32px;
+            height: 32px;
+        }
+
+        /* --- Installation --- */
+        .step-container {
+            display: flex;
+            gap: 4rem;
+            margin-top: 5rem;
+        }
+
+        .step {
+            flex: 1;
+            position: relative;
+        }
+
+        .step-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            color: var(--accent);
+            opacity: 0.15;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Divider --- */
+        .divider {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, #222, transparent);
+            position: relative;
+        }
+
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+            opacity: 0.3;
+            animation: flow 6s infinite ease-in-out;
+        }
+
+        @keyframes flow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 6rem 0;
+            text-align: center;
+            border-top: 1px solid #1a1a1a;
+            background: #080b0f;
+        }
+
+        .footer-logo {
+            font-weight: 800;
+            letter-spacing: 0.6em;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .social-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin: 0 1.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: var(--transition);
+        }
+
+        .social-link:hover { color: var(--accent); }
+
+        .disclaimer {
+            margin-top: 4rem;
+            font-size: 0.75rem;
+            color: #333;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 4rem; }
+            .hero-title { font-size: 4rem; }
+            .step-container { flex-direction: column; gap: 3rem; }
+            .btn-group { flex-direction: column; width: 100%; }
+            .btn { text-align: center; }
+            section { padding: 100px 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor-glow"></div>
+
+    <!-- HERO SECTION -->
+    <header id="hero">
+        <div class="hero-glow"></div>
+        <div class="container reveal">
+            <span class="mono">Protocol v1.0.4 Initialized</span>
+            <h1 class="hero-title">GHOSTCHAT</h1>
+            <p class="hero-subtitle">Reclaim your digital sovereignty.</p>
+            <p class="hero-statement">
+                Digital conversations are exposed. GhostChat restores the balance of power, creating an impenetrable layer of client-side encryption over your existing platforms. Secure your data before it leaves your machine.
+            </p>
+            <p class="section-text" style="font-size:0.9rem; opacity:0.6; margin-bottom: 0.5rem;">
+                Requires GhostChat on both ends with a shared passphrase.
+            </p>
+            <p class="section-text" style="font-size:0.85rem; opacity:0.6;">
+                Press <strong>Shift</strong> before <strong>Enter</strong> to encrypt.
+            </p>
+            <div class="btn-group">
+                <a href="#installation" class="btn btn-primary" aria-label="Navigate to installation instructions">Install GhostChat</a>
+                <a href="https://github.com/SolvyrEryx/GhostChat" class="btn btn-secondary" aria-label="View GhostChat source code on GitHub" target="_blank" rel="noopener noreferrer">View Source</a>
+            </div>
+            <div class="hero-badges">
+                <span class="badge">MIT Open Source</span>
+                <span class="badge">Chrome Extension</span>
+                <span class="badge">Zero Tracking</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <!-- PROBLEM SECTION -->
+    <section id="problem">
+        <div class="bg-number">01</div>
+        <div class="container">
+            <div class="grid-2">
+                <div class="reveal">
+                    <span class="mono">The Crisis of Privacy</span>
+                    <h2 style="font-size: 2.8rem; margin: 1.5rem 0;">Privacy is not secrecy. <br>It is autonomy.</h2>
+                    <p class="section-text">
+                        The current internet architecture is built on the assumption that your private data is a currency. Centralized platforms—even those claiming high security—often retain control over the metadata and the encryption keys that define your digital identity.
+                    </p>
+                    <p class="section-text">
+                        In a world of automated surveillance and data harvesting, the illusion of "private messaging" has made us vulnerable. We share our financial data, legal discussions, and intimate thoughts on platforms that have a financial incentive to analyze them.
+                    </p>
+                    <blockquote>"Encryption is not a luxury. It is a fundamental necessity for the preservation of a free and autonomous digital life."</blockquote>
+                </div>
+                <div class="reveal">
+                    <p class="section-text" style="margin-top: 6rem;">
+                        GhostChat was designed to break this cycle of dependency. By injecting a high-performance cryptographic layer directly into the browser's Document Object Model (DOM), we bypass the platform's visibility entirely.
+                    </p>
+                    <p class="section-text">
+                        The host platform becomes nothing more than a delivery vehicle for encrypted noise. They cannot read your history. They cannot harvest your keywords. They cannot compromise your future.
+                    </p>
+                    <p class="section-text">
+                        You hold the keys. You manage the entropy. You define the boundaries of your digital world. 
+                    </p>
+                    <blockquote>"Privacy is the power to selectively reveal oneself to the world."</blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRUST SECTION -->
+    <section id="trust">
+        <div class="container reveal">
+            <div style="max-width: 650px; margin-bottom: 4rem;">
+                <span class="mono">Security Posture</span>
+                <h2 style="font-size: 2.5rem; margin: 1.5rem 0;">Engineered for Transparency</h2>
+                <p class="section-text">Trust should never be blind. GhostChat is built on a foundation of verifiable, open-source principles designed to survive extreme scrutiny.</p>
+            </div>
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <h4>Publicly Auditable</h4>
+                    <p>Our codebase is entirely transparent. We invite security professionals and privacy advocates to audit our logic to ensure no backdoors exist.</p>
+                </div>
+                <div class="trust-item">
+                    <h4>Zero Permissions</h4>
+                    <p>GhostChat does not request access to your identity or browser history. We only interact with the specific elements of the chat platforms you authorize.</p>
+                </div>
+                <div class="trust-item">
+                    <h4>Self-Contained</h4>
+                    <p>The extension operates as a local tool. It does not communicate with any external APIs or servers. All data stays within your local environment.</p>
+                </div>
+                <div class="trust-item">
+                    <h4>No Telemetry</h4>
+                    <p>We do not collect usage statistics, tracking pixels, or error reports. Your interaction with the tool is your business alone.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECHNICAL SECTION -->
+    <section id="technical">
+        <div class="bg-number">02</div>
+        <div class="container">
+            <div class="reveal" style="max-width: 850px; margin-bottom: 5rem;">
+                <span class="mono">Technical Deep-Dive</span>
+                <h2 style="font-size: 2.8rem; margin: 1.5rem 0;">AES-GCM 256 Authenticated Encryption</h2>
+                <p class="section-text">
+                    GhostChat leverages the native <strong>Web Crypto API</strong> to perform hardware-accelerated cryptographic operations within the browser's high-security sandbox. Encryption is manually triggered using a keyboard event (Shift) prior to message submission to ensure plaintext never reaches the network layer.
+                </p>
+                <p class="section-text">
+                    Every session key is derived from your high-entropy passphrase using <strong>PBKDF2-HMAC-SHA256</strong>. For every message transmitted, GhostChat generates a unique <strong>96-bit Initialization Vector (IV)</strong> and appends a <strong>128-bit authentication tag</strong>, ensuring that any tampering by the host platform is instantly detected and rejected.
+                </p>
+            </div>
+
+            <div class="grid-2">
+                <div class="code-window reveal">
+                    <div class="code-header">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                        <span style="margin-left: auto; font-family: 'JetBrains Mono'; font-size: 0.7rem; color: #444;">secure_layer.js</span>
+                    </div>
+                    <pre>
+<span class="comment">// Client-Side AES-GCM Protocol</span>
+<span class="keyword">async function</span> encryptPacket(rawText, userKey) {
+  <span class="comment">// Non-repeating 96-bit IV</span>
+  <span class="keyword">const</span> iv = crypto.getRandomValues(<span class="keyword">new</span> Uint8Array(12));
+  <span class="keyword">const</span> buffer = <span class="keyword">new</span> TextEncoder().encode(rawText);
+
+  <span class="keyword">const</span> ciphertext = <span class="keyword">await</span> crypto.subtle.encrypt(
+    { name: <span class="string">"AES-GCM"</span>, iv: iv, tagLength: 128 },
+    userKey,
+    buffer
+  );
+
+  <span class="keyword">return</span> serialize(ciphertext, iv);
+}</pre>
+                </div>
+                <div class="reveal">
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1.6rem;">Zero-Trust Architecture</h3>
+                    <p class="section-text">
+                        <strong>Deterministic Derivation:</strong> Your actual master passphrase never exists in plain text on your storage. It is processed into a cryptographic key and held only in volatile memory.
+                    </p>
+                    <p class="section-text">
+                        <strong>DOM Injection:</strong> GhostChat scans the chat interface for specific markers, decrypting packets in real-time. This allows for a native-feeling experience without compromising security.
+                    </p>
+                    <p class="section-text">
+                        <strong>Message Isolation:</strong> By using unique IVs for every transaction, we ensure that the discovery of one message's parameters provides no advantage in decrypting any subsequent communications.
+                    </p>
+                </div>
+            </div>
+
+            <!-- SHARED KEY REQUIREMENT -->
+            <div class="reveal" style="margin-top: 4rem; max-width: 800px;">
+                <h3 style="margin-bottom: 1rem;">Shared Key Requirement</h3>
+                <p class="section-text">
+                    GhostChat operates on a shared-secret model. Both participants must have the GhostChat extension installed and must use the exact same passphrase.
+                </p>
+                <p class="section-text">
+                    Messages are encrypted locally before transmission and decrypted locally upon detection. Without the correct passphrase, encrypted messages remain unreadable Base64 ciphertext.
+                </p>
+                <p class="section-text">
+                    GhostChat does not perform key exchange or identity verification. Security is entirely dependent on the strength and secrecy of the shared passphrase.
+                </p>
+            </div>
+
+            <!-- ENCRYPTION FLOW BOX -->
+            <div class="reveal" style="margin-top:4rem; background:#0B0F14; border:1px solid #222; padding:3rem; border-radius:4px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+                <span class="mono">Encryption Flow</span>
+                <p class="section-text" style="margin-top:1.5rem; color: #fff;">
+                    <strong>1.</strong> Type your message in the Discord Web chat input.
+                </p>
+                <p class="section-text" style="color: #fff;">
+                    <strong>2.</strong> Press <span style="color: var(--accent); border: 1px solid var(--accent); padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; font-family: 'JetBrains Mono';">Shift</span> to encrypt the message locally in the input field.
+                </p>
+                <p class="section-text" style="color: #fff;">
+                    <strong>3.</strong> Confirm the message now displays as an encrypted Base64 string.
+                </p>
+                <p class="section-text" style="color: #fff;">
+                    <strong>4.</strong> Press <span style="color: #888; border: 1px solid #444; padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; font-family: 'JetBrains Mono';">Enter</span> to transmit the ciphertext securely.
+                </p>
+                <p class="section-text" style="margin-top:1.5rem; opacity:0.6; font-size: 0.9rem; font-style: italic;">
+                    * Encryption must occur via the Shift key before pressing Enter to ensure plaintext is never sent.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURE SECTION -->
+    <section id="features">
+        <div class="bg-number" style="right: -40px; left: auto;">03</div>
+        <div class="container">
+            <div class="reveal" style="text-align: center; margin-bottom: 5rem;">
+                <span class="mono">Product Specifications</span>
+                <h2 style="font-size: 2.8rem;">Elite Privacy Toolset</h2>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card reveal">
+                    <i data-lucide="shield" class="feature-icon" aria-hidden="true"></i>
+                    <h3>Authenticated Privacy</h3>
+                    <p class="section-text">AES-GCM ensures that your messages are both encrypted and authentic. No platform can alter your text without failing the tag check.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <i data-lucide="hard-drive" class="feature-icon" aria-hidden="true"></i>
+                    <h3>Local Storage Isolation</h3>
+                    <p class="section-text">Settings are stored using browser-encrypted local storage, isolated by the Extension API's strict origin policies.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <i data-lucide="layers" class="feature-icon" aria-hidden="true"></i>
+                    <h3>Seamless Overlay</h3>
+                    <p class="section-text">Integrated directly into Discord Web. Use the platform you love while maintaining the privacy you deserve.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <i data-lucide="eye-off" class="feature-icon" aria-hidden="true"></i>
+                    <h3>Invisible Content</h3>
+                    <p class="section-text">To anyone without the extension and the shared key, your messages appear as unreadable cryptographic noise.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <i data-lucide="zap" class="feature-icon" aria-hidden="true"></i>
+                    <h3>Optimized Engine</h3>
+                    <p class="section-text">Built with vanilla JavaScript and native browser APIs. No external dependencies. No performance overhead.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <i data-lucide="unlock" class="feature-icon" aria-hidden="true"></i>
+                    <h3>User-Held Entropy</h3>
+                    <p class="section-text">You generate the keys. You control the distribution. We simply provide the engine to execute your security policy.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PLATFORM AVAILABILITY -->
+    <section id="availability">
+        <div class="container">
+            <div class="reveal" style="text-align:center; max-width:800px; margin:0 auto;">
+                <p class="mono">PLATFORM SUPPORT</p>
+                <h2 style="font-size:2.5rem; margin:1rem 0;">Currently Available for Discord Web</h2>
+                <p class="section-text">
+                    GhostChat is currently optimized for Discord Web. The extension integrates directly into the browser DOM, allowing seamless encryption and decryption without altering the platform experience.
+                </p>
+                <p class="section-text">
+                    Support for additional mainstream web platforms is actively in development. Future releases will expand compatibility while maintaining the same client-side encryption architecture.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- INSTALLATION -->
+    <section id="installation" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="reveal" style="text-align: center; margin-bottom: 4rem;">
+                <span class="mono">Deployment</span>
+                <h2 style="font-size: 2.8rem;">Install in Under 60 Seconds</h2>
+            </div>
+            <div class="step-container">
+                <div class="step reveal">
+                    <div class="step-num">01</div>
+                    <h3>Source Acquisition</h3>
+                    <p class="section-text">Download the release package or clone the source code from the official GitHub repository.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-num">02</div>
+                    <h3>Developer Loading</h3>
+                    <p class="section-text">Navigate to chrome://extensions, enable Developer Mode, and select the 'Load unpacked' option.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-num">03</div>
+                    <h3>Key Initialization</h3>
+                    <p class="section-text">
+                        Type your message normally. Press <strong>Shift</strong> to encrypt it before sending. Once encrypted, press <strong>Enter</strong> to transmit securely. Ensure both participants share the same passphrase.
+                    </p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 5rem;">
+                <a href="https://github.com/SolvyrEryx/GhostChat" class="btn btn-primary reveal" target="_blank" rel="noopener noreferrer">Get GhostChat on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHILOSOPHY SECTION -->
+    <section id="philosophy">
+        <div class="container">
+            <div class="reveal" style="max-width: 900px; margin: 0 auto; text-align: center;">
+                <span class="mono">The Mission</span>
+                <h2 style="font-size: 3rem; margin: 2.5rem 0;">A Return to Digital Sovereignty.</h2>
+                <div class="section-text" style="font-size: 1.2rem; line-height: 2;">
+                    <p style="margin-bottom: 2.5rem;">
+                        GhostChat began as an experiment in restoring user-controlled encryption to everyday platforms. We reject the notion that a convenient digital life must be built on a foundation of vulnerability.
+                    </p>
+                    <p style="margin-bottom: 2.5rem;">
+                        Our objective is to empower the individual. In an age of centralized control, the ability to have a truly private conversation is a fundamental human right. GhostChat is the bridge between the utility of modern social networks and the sanctity of private correspondence.
+                    </p>
+                    <p>
+                        By deploying GhostChat, you are reclaiming your identity. You are becoming a ghost in the machine. You are securing the future of your digital autonomy.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p class="footer-logo">GHOSTCHAT</p>
+            <p class="section-text" style="font-size: 0.9rem;">Architected by Rahul J. | Defend Your Freedom.</p>
+            <div style="margin: 2.5rem 0;">
+                <a href="#" class="social-link">Twitter</a>
+                <a href="https://github.com/SolvyrEryx/GhostChat" class="social-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="#" class="social-link">Docs</a>
+            </div>
+            <div class="disclaimer">
+                GhostChat is an independent open-source initiative and is not affiliated with Discord Inc. Use at your own discretion. GhostChat does not replace end-to-end encryption protocols and relies on shared passphrase secrecy. Maintain high entropy for maximum security.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Smooth Reveal ---
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // --- Mouse Glow ---
+        const glow = document.getElementById('cursor-glow');
+        if (window.matchMedia("(min-width: 1024px)").matches) {
+            document.addEventListener('mousemove', (e) => {
+                window.requestAnimationFrame(() => {
+                    glow.style.transform = `translate3d(${e.clientX - 25}px, ${e.clientY - 25}px, 0)`;
+                });
+            });
+        }
+
+        // --- Smooth Scroll Navigation ---
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                // If it's an external link, don't prevent default
+                if (this.getAttribute('target') === '_blank' || targetId.startsWith('http')) return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    e.preventDefault();
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // --- Icons ---
+        lucide.createIcons();
+    </script>
+</body>
+</html>
